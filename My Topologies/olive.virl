@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<topology xmlns="http://www.cisco.com/VIRL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.95" xsi:schemaLocation="http://www.cisco.com/VIRL https://raw.github.com/CiscoVIRL/schema/v0.95/virl.xsd">
+    <node name="junosolive-1" type="SIMPLE" subtype="Junos Olive" location="327,299" vmImage="Junos Olive-13.3R9.13 [b9a4c33b-103c-447d-a2d1-23e7847623cd]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }</entry>
+        </extensions>
+        <interface id="0" name="em1"/>
+    </node>
+    <node name="iosv-1" type="SIMPLE" subtype="IOSv" location="784,295">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+    </node>
+    <annotations/>
+    <connection dst="/virl:topology/virl:node[2]/virl:interface[1]" src="/virl:topology/virl:node[1]/virl:interface[1]"/>
+</topology>

@@ -1,0 +1,2252 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<topology xmlns="http://www.cisco.com/VIRL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.95" xsi:schemaLocation="http://www.cisco.com/VIRL https://raw.github.com/CiscoVIRL/schema/v0.95/virl.xsd">
+    <node name="CE1" type="SIMPLE" subtype="vSRX" location="222,176" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">system {
+    host-name CE1;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    static-host-mapping {
+        CE1 inet [ 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4 ];
+        CE2 inet [ 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2 ];
+        PE1 inet [ 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2 ];
+        PE2 inet [ 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4 ];
+        PE3 inet [ 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33 ];
+        PE4 inet [ 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44 ];
+        P1 inet [ 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8 ];
+        P2 inet [ 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10 ];
+        RR1 inet [ 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19 ];
+        RR2 inet [ 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23 ];
+        IX3 inet [ 192.168.20.3 10.2.0.3 10.2.34.3 ];
+        IX4 inet [ 192.168.20.4 10.2.0.4 10.2.34.4 ];
+    }
+    services {
+        ssh {
+            protocol-version v2;
+        }
+        telnet;
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:85:6a;
+        unit 0 {
+            family inet {
+                address 10.255.0.11/24;
+            }
+        }
+    }
+    ge-0/0/1 {
+        vlan-tagging;
+        mac 00:50:56:8b:0e:36;
+        unit 1001 {
+            vlan-id 1001;
+            family inet {
+                address 10.1.12.1/24;
+            }
+        }
+    }
+    ge-0/0/2 {
+        vlan-tagging;
+        mac 00:50:56:8b:3e:b3;
+        unit 1011 {
+            vlan-id 1011;
+            family inet {
+                address 10.1.0.0/31;
+            }
+        }
+    }
+    ge-0/0/3 {
+        vlan-tagging;
+        mac 00:50:56:8b:00:89;
+        unit 1012 {
+            vlan-id 1012;
+            family inet {
+                address 10.1.0.4/31;
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 192.168.10.1/32;
+            }
+        }
+    }
+}
+routing-options {
+    static {
+        route 0.0.0.0/0 discard;
+    }
+    autonomous-system 65001;
+    forwarding-table {
+        export PL-LB;
+    }
+}
+protocols {
+    bgp {
+        group EBGP-65000 {
+            peer-as 65000;
+            neighbor 10.1.0.1 {
+                export PL-EBGP-PE1-OUT;
+            }
+            neighbor 10.1.0.5 {
+                export PL-EBGP-PE2-OUT;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement PL-EBGP-PE1-OUT {
+        term DIRECT {
+            from {
+                protocol direct;
+                route-filter 192.168.10.1/32 exact;
+                route-filter 10.1.12.0/24 exact;
+            }
+            then {
+                metric 100;
+                accept;
+            }
+        }
+    }
+    policy-statement PL-EBGP-PE2-OUT {
+        term DIRECT {
+            from {
+                protocol direct;
+                route-filter 192.168.10.1/32 exact;
+                route-filter 10.1.12.0/24 exact;
+            }
+            then {
+                metric 200;
+                accept;
+            }
+        }
+    }
+    policy-statement PL-LB {
+        then {
+            load-balance per-packet;
+        }
+    }
+}</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+    </node>
+    <node name="CE2" type="SIMPLE" subtype="vSRX" location="219,545" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">system {
+    host-name CE2;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    static-host-mapping {
+        CE1 inet [ 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4 ];
+        CE2 inet [ 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2 ];
+        PE1 inet [ 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2 ];
+        PE2 inet [ 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4 ];
+        PE3 inet [ 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33 ];
+        PE4 inet [ 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44 ];
+        P1 inet [ 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8 ];
+        P2 inet [ 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10 ];
+        RR1 inet [ 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19 ];
+        RR2 inet [ 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23 ];
+        IX3 inet [ 192.168.20.3 10.2.0.3 10.2.34.3 ];
+        IX4 inet [ 192.168.20.4 10.2.0.4 10.2.34.4 ];
+    }
+    services {
+        ssh;
+        telnet;
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:1f:01;
+        unit 0 {
+            family inet {
+                address 10.255.0.12/24;
+            }
+        }
+    }
+    ge-0/0/1 {
+        vlan-tagging;
+        mac 00:50:56:8b:25:14;
+        unit 1001 {
+            vlan-id 1001;
+            family inet {
+                address 10.1.12.2/24;
+            }
+        }
+    }
+    ge-0/0/2 {
+        vlan-tagging;
+        mac 00:50:56:8b:67:6e;
+        unit 1021 {
+            vlan-id 1021;
+            family inet {
+                address 10.1.0.6/31;
+            }
+        }
+    }
+    ge-0/0/3 {
+        vlan-tagging;
+        mac 00:50:56:8b:55:e1;
+        unit 1022 {
+            vlan-id 1022;
+            family inet {
+                address 10.1.0.2/31;
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 192.168.10.2/32;
+            }
+        }
+    }
+}
+routing-options {
+    static {
+        route 0.0.0.0/0 discard;
+    }
+    autonomous-system 65001;
+    forwarding-table {
+        export PL-LB;
+    }
+}
+protocols {
+    bgp {
+        group EBGP-65000 {
+            peer-as 65000;
+            neighbor 10.1.0.7 {
+                export PL-EBGP-PE1-OUT;
+            }
+            neighbor 10.1.0.3 {
+                export PL-EBGP-PE2-OUT;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement PL-EBGP-PE1-OUT {
+        term DIRECT {
+            from {
+                protocol direct;
+                route-filter 192.168.10.2/32 exact;
+                route-filter 10.1.12.0/24 exact;
+            }
+            then {
+                metric 200;
+                accept;
+            }
+        }
+    }
+    policy-statement PL-EBGP-PE2-OUT {
+        term DIRECT {
+            from {
+                protocol direct;
+                route-filter 192.168.10.2/32 exact;
+                route-filter 10.1.12.0/24 exact;
+            }
+            then {
+                metric 100;
+                accept;
+            }
+        }
+    }
+    policy-statement PL-LB {
+        then {
+            load-balance per-packet;
+        }
+    }
+}</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+    </node>
+    <node name="P1" type="SIMPLE" subtype="vSRX" location="680,176" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">system {
+    host-name P1;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    static-host-mapping {
+        CE1 inet [ 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4 ];
+        CE2 inet [ 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2 ];
+        PE1 inet [ 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2 ];
+        PE2 inet [ 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4 ];
+        PE3 inet [ 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33 ];
+        PE4 inet [ 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44 ];
+        P1 inet [ 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8 ];
+        P2 inet [ 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10 ];
+        RR1 inet [ 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19 ];
+        RR2 inet [ 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23 ];
+        IX3 inet [ 192.168.20.3 10.2.0.3 10.2.34.3 ];
+        IX4 inet [ 192.168.20.4 10.2.0.4 10.2.34.4 ];
+    }
+    services {
+        ftp;
+        ssh;
+        telnet;
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:7c:0e;
+        unit 0 {
+            family inet {
+                address 10.255.0.31/24;
+            }
+        }
+    }
+    ge-0/0/1 {
+        mac 00:50:56:8b:3d:1f;
+        unit 0 {
+            family inet {
+                address 10.0.0.3/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    ge-0/0/2 {
+        mac 00:50:56:8b:9a:19;
+        unit 0 {
+            family inet {
+                address 10.0.0.16/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    ge-0/0/3 {
+        mac 00:50:56:8b:23:a6;
+        unit 0 {
+            family inet {
+                address 10.0.0.6/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    ge-0/0/4 {
+        mac 00:50:56:8b:ad:b6;
+        unit 0 {
+            family inet {
+                address 10.0.0.24/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    ge-0/0/5 {
+        mac 00:50:56:8b:4f:f4;
+        unit 0 {
+            family inet {
+                address 10.0.0.20/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    ge-0/0/6 {
+        mac 00:50:56:8b:52:97;
+        unit 0 {
+            family inet {
+                address 10.0.0.8/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.0.1/32;
+            }
+            family iso {
+                address 49.0000.1720.1600.0001.00;
+            }
+        }
+    }
+}
+routing-options {
+    static {
+        route 0.0.0.0/0 discard;
+    }
+    router-id 172.16.0.1;
+    forwarding-table {
+        export PL-LB;
+    }
+}
+protocols {
+    mpls {
+        icmp-tunneling;
+        interface ge-0/0/1.0;
+        interface ge-0/0/3.0;
+        interface ge-0/0/4.0;
+        interface ge-0/0/6.0;
+    }
+    isis {
+        level 1 disable;
+        level 2 wide-metrics-only;
+        interface ge-0/0/1.0;
+        interface ge-0/0/2.0;
+        interface ge-0/0/3.0;
+        interface ge-0/0/4.0;
+        interface ge-0/0/5.0;
+        interface ge-0/0/6.0;
+        interface lo0.0;
+    }
+    ldp {
+        track-igp-metric;
+        interface ge-0/0/1.0;
+        interface ge-0/0/2.0;
+        interface ge-0/0/3.0;
+        interface ge-0/0/4.0;
+        interface ge-0/0/5.0;
+        interface ge-0/0/6.0;
+        interface lo0.0;
+    }
+    lldp {
+        interface all;
+    }
+}
+policy-options {
+    policy-statement PL-LB {
+        then {
+            load-balance per-packet;
+        }
+    }
+}</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+        <interface id="3" name="ge-0/0/4"/>
+        <interface id="4" name="ge-0/0/5"/>
+        <interface id="5" name="ge-0/0/6"/>
+    </node>
+    <node name="PE3" type="SIMPLE" subtype="vSRX" location="965,176" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">system {
+    host-name PE3;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    static-host-mapping {
+        CE1 inet [ 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4 ];
+        CE2 inet [ 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2 ];
+        PE1 inet [ 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2 ];
+        PE2 inet [ 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4 ];
+        PE3 inet [ 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33 ];
+        PE4 inet [ 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44 ];
+        P1 inet [ 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8 ];
+        P2 inet [ 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10 ];
+        RR1 inet [ 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19 ];
+        RR2 inet [ 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23 ];
+        IX3 inet [ 192.168.20.3 10.2.0.3 10.2.34.3 ];
+        IX4 inet [ 192.168.20.4 10.2.0.4 10.2.34.4 ];
+    }
+    services {
+        ssh;
+        telnet;
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:f4:63;
+        unit 0 {
+            family inet {
+                address 10.255.0.23/24;
+            }
+        }
+    }
+    ge-0/0/1 {
+        mac 00:50:56:8b:0b:75;
+        unit 0 {
+            family inet {
+                address 10.0.0.9/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    ge-0/0/2 {
+        mac 00:50:56:8b:05:57;
+        unit 0 {
+            family inet {
+                address 10.0.0.12/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    ge-0/0/3 {
+        vlan-tagging;
+        mac 00:50:56:8b:3d:b3;
+        unit 1031 {
+            vlan-id 1031;
+            family inet {
+                address 10.2.0.33/24;
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.0.33/32;
+            }
+            family iso {
+                address 49.0000.1720.1600.0033.00;
+            }
+        }
+    }
+}
+routing-options {
+    router-id 172.16.0.33;
+    autonomous-system 65000;
+    forwarding-table {
+        export PL-LB;
+    }
+}
+protocols {
+    mpls {
+        icmp-tunneling;
+        interface ge-0/0/1.0;
+        interface ge-0/0/2.0;
+    }
+    bgp {
+        group EBGP-65002 {
+            peer-as 65002;
+            neighbor 10.2.0.3;
+        }
+        group IBGP-RR {
+            type internal;
+            local-address 172.16.0.33;
+            family inet {
+                unicast;
+            }
+            export PL-IBGP-RR-OUT;
+            neighbor 172.16.0.201;
+            neighbor 172.16.0.202;
+        }
+    }
+    isis {
+        level 1 disable;
+        level 2 wide-metrics-only;
+        interface ge-0/0/1.0;
+        interface ge-0/0/2.0;
+        interface lo0.0;
+    }
+    ldp {
+        track-igp-metric;
+        interface ge-0/0/1.0;
+        interface ge-0/0/2.0;
+        interface lo0.0;
+    }
+}
+policy-options {
+    policy-statement PL-IBGP-RR-OUT {
+        term NHS {
+            then {
+                next-hop self;
+            }
+        }
+    }
+    policy-statement PL-LB {
+        then {
+            load-balance per-packet;
+        }
+    }
+}
+</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+    </node>
+    <node name="RR1" type="SIMPLE" subtype="vSRX" location="572,363" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">system {
+    host-name RR1;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    static-host-mapping {
+        CE1 inet [ 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4 ];
+        CE2 inet [ 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2 ];
+        PE1 inet [ 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2 ];
+        PE2 inet [ 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4 ];
+        PE3 inet [ 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33 ];
+        PE4 inet [ 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44 ];
+        P1 inet [ 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8 ];
+        P2 inet [ 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10 ];
+        RR1 inet [ 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19 ];
+        RR2 inet [ 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23 ];
+        IX3 inet [ 192.168.20.3 10.2.0.3 10.2.34.3 ];
+        IX4 inet [ 192.168.20.4 10.2.0.4 10.2.34.4 ];
+    }
+    services {
+        ssh;
+        telnet;
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:35:d3;
+        unit 0 {
+            family inet {
+                address 10.255.0.41/24;
+            }
+        }
+    }
+    ge-0/0/1 {
+        mac 00:50:56:8b:10:69;
+        unit 0 {
+            family inet {
+                address 10.0.0.17/31;
+            }
+            family iso;
+        }
+    }
+    ge-0/0/2 {
+        mac 00:50:56:8b:e7:a7;
+        unit 0 {
+            family inet {
+                address 10.0.0.14/31;
+            }
+            family iso;
+        }
+    }
+    ge-0/0/3 {
+        mac 00:50:56:8b:f0:9c;
+        unit 0 {
+            family inet {
+                address 10.0.0.19/31;
+            }
+            family iso;
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.0.201/32;
+            }
+            family iso {
+                address 49.0000.1720.1600.0201.00;
+            }
+        }
+    }
+}
+routing-options {
+    rib inet.3 {
+        static {
+            route 0.0.0.0/0 discard;
+        }
+    }
+    static {
+        route 0.0.0.0/0 discard;
+    }
+    autonomous-system 65000;
+}
+protocols {
+    bgp {
+        group CLIENTS {
+            type internal;
+            local-address 172.16.0.201;
+            family inet {
+                unicast;
+            }
+            cluster 172.16.0.201;
+            neighbor 172.16.0.11;
+            neighbor 172.16.0.22;
+            neighbor 172.16.0.33;
+            neighbor 172.16.0.44;
+        }
+        group OTHER-RR {
+            type internal;
+            local-address 172.16.0.201;
+            family inet {
+                unicast;
+            }
+            neighbor 172.16.0.202;
+        }
+    }
+    isis {
+        overload;
+        level 1 disable;
+        level 2 wide-metrics-only;
+        interface ge-0/0/1.0;
+        interface ge-0/0/2.0;
+        interface ge-0/0/3.0 {
+            level 2 metric 100;
+        }
+        interface lo0.0;
+    }
+    lldp {
+        interface all;
+    }
+}
+</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+    </node>
+    <node name="CE3" type="SIMPLE" subtype="vSRX" location="1135,266" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]" ipv4="192.168.0.11">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="config" type="String">system {
+    host-name IX3;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    static-host-mapping {
+        CE1 inet [ 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4 ];
+        CE2 inet [ 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2 ];
+        PE1 inet [ 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2 ];
+        PE2 inet [ 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4 ];
+        PE3 inet [ 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33 ];
+        PE4 inet [ 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44 ];
+        P1 inet [ 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8 ];
+        P2 inet [ 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10 ];
+        RR1 inet [ 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19 ];
+        RR2 inet [ 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23 ];
+        IX3 inet [ 192.168.20.3 10.2.0.3 10.2.34.3 ];
+        IX4 inet [ 192.168.20.4 10.2.0.4 10.2.34.4 ];
+    }
+    services {
+        ssh;
+        telnet;
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:08:8f;
+        unit 0 {
+            family inet {
+                address 10.255.0.13/24;
+            }
+        }
+    }
+    ge-0/0/1 {
+        vlan-tagging;
+        mac 00:50:56:8b:04:cc;
+        unit 1031 {
+            vlan-id 1031;
+            family inet {
+                address 10.2.0.3/24;
+            }
+        }
+    }
+    ge-0/0/2 {
+        vlan-tagging;
+        mac 00:50:56:8b:bb:cb;
+        unit 1041 {
+            vlan-id 1041;
+            family inet {
+                address 10.2.34.3/24;
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 192.168.20.3/32;
+            }
+        }
+    }
+}
+routing-options {
+    autonomous-system 65002;
+    forwarding-table {
+        export PL-LB;
+    }
+}
+protocols {
+    bgp {
+        group EBGP-65000 {
+            export PL-EBGP-65000-OUT;
+            peer-as 65000;
+            neighbor 10.2.0.33;
+        }
+    }
+    lldp {
+        interface all;
+    }
+}
+policy-options {
+    policy-statement PL-EBGP-65000-OUT {
+        term DIRECT {
+            from {
+                protocol direct;
+                route-filter 192.168.20.3/32 exact;
+                route-filter 10.2.34.3/24 exact;
+            }
+            then accept;
+        }
+    }
+    policy-statement PL-LB {
+        then {
+            load-balance per-packet;
+        }
+    }
+}</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1" ipv4="10.0.0.41" netPrefixLenV4="29"/>
+        <interface id="1" name="ge-0/0/2" ipv4="10.0.128.2" netPrefixLenV4="29"/>
+    </node>
+    <node name="CE4" type="SIMPLE" subtype="vSRX" location="1144,452" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">system {
+    host-name IX4;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    static-host-mapping {
+        CE1 inet [ 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4 ];
+        CE2 inet [ 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2 ];
+        PE1 inet [ 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2 ];
+        PE2 inet [ 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4 ];
+        PE3 inet [ 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33 ];
+        PE4 inet [ 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44 ];
+        P1 inet [ 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8 ];
+        P2 inet [ 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10 ];
+        RR1 inet [ 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19 ];
+        RR2 inet [ 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23 ];
+        IX3 inet [ 192.168.20.3 10.2.0.3 10.2.34.3 ];
+        IX4 inet [ 192.168.20.4 10.2.0.4 10.2.34.4 ];
+    }
+    services {
+        ssh;
+        telnet;
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:13:68;
+        unit 0 {
+            family inet {
+                address 10.255.0.14/24;
+            }
+        }
+    }
+    ge-0/0/1 {
+        vlan-tagging;
+        mac 00:50:56:8b:de:d3;
+        unit 1031 {
+            vlan-id 1031;
+            family inet {
+                address 10.2.0.4/24;
+            }
+        }
+    }
+    ge-0/0/2 {
+        vlan-tagging;
+        mac 00:50:56:8b:8c:12;
+        unit 1041 {
+            vlan-id 1041;
+            family inet {
+                address 10.2.34.4/24;
+            }
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 192.168.20.4/32;
+            }
+        }
+    }
+}
+routing-options {
+    autonomous-system 65002;
+    forwarding-table {
+        export PL-LB;
+    }
+}
+protocols {
+    bgp {
+        group EBGP-65000 {
+            export PL-EBGP-65000-OUT;
+            peer-as 65000;
+            neighbor 10.2.0.44;
+        }
+    }
+    lldp {
+        interface all;
+    }
+}
+policy-options {
+    policy-statement PL-EBGP-65000-OUT {
+        term DIRECT {
+            from {
+                protocol direct;
+                route-filter 192.168.20.4/32 exact;
+                route-filter 10.2.34.0/24 exact;
+            }
+            then accept;
+        }
+    }
+    policy-statement PL-LB {
+        then {
+            load-balance per-packet;
+        }
+    }
+}
+</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+    </node>
+    <node name="PE2" type="SIMPLE" subtype="IOS XRv" location="365,545" vmImage="IOS XRv [0ae2f1ad-1a23-4884-9e68-fb02496091d9]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">hostname PE2
+telnet vrf default ipv4 server max-servers 10
+domain ipv4 host p1 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8
+domain ipv4 host p2 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10
+domain ipv4 host ce1 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4
+domain ipv4 host ce2 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2
+domain ipv4 host ix3 192.168.20.3 10.2.0.3 10.2.34.3
+domain ipv4 host ix4 192.168.20.4 10.2.0.4 10.2.34.4
+domain ipv4 host pe1 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2
+domain ipv4 host pe2 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4
+domain ipv4 host pe3 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33
+domain ipv4 host pe4 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44
+domain ipv4 host rr1 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19
+domain ipv4 host rr2 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23
+line console
+ exec-timeout 0 0
+ session-timeout 0
+!
+line default
+ exec-timeout 0 0
+ session-timeout 0
+!
+vty-pool default 0 10 line-template default
+interface Loopback0
+ ipv4 address 172.16.0.22 255.255.255.255
+!
+interface MgmtEth0/0/CPU0/0
+ ipv4 address 10.255.0.22 255.255.0.0
+!
+interface GigabitEthernet0/0/0/0
+!
+interface GigabitEthernet0/0/0/0.1022
+ ipv4 address 10.1.0.3 255.255.255.254
+ encapsulation dot1q 1022
+!
+interface GigabitEthernet0/0/0/1
+!
+interface GigabitEthernet0/0/0/1.1022
+ ipv4 address 10.1.0.5 255.255.255.254
+ encapsulation dot1q 1012
+!
+interface GigabitEthernet0/0/0/2
+ ipv4 address 10.0.0.1 255.255.255.254
+!
+interface GigabitEthernet0/0/0/3
+ ipv4 address 10.0.0.4 255.255.255.254
+!
+interface preconfigure GigabitEthernet0/0/0/4
+!
+interface preconfigure GigabitEthernet0/0/0/5
+!
+interface preconfigure GigabitEthernet0/0/0/6
+!
+route-policy PL-IBGP-RR-OUT
+  set next-hop self
+end-policy
+!
+route-policy PL-EBGP-CE1-OUT
+  set med 200
+  pass
+end-policy
+!
+route-policy PL-EBGP-CE2-OUT
+  set med 100
+  pass
+end-policy
+!
+route-policy PL-EBGP-65001-IN
+  pass
+end-policy
+!
+route-policy PL-EBGP-65001-OUT
+  pass
+end-policy
+!
+router static
+ address-family ipv4 unicast
+  0.0.0.0/0 Null0
+ !
+!
+router isis mycore
+ is-type level-2-only
+ net 49.0000.1720.1600.0022.00
+ address-family ipv4 unicast
+  metric-style wide
+  maximum-paths 8
+ !
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/2
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/3
+  address-family ipv4 unicast
+  !
+ !
+!
+router bgp 65000
+ address-family ipv4 unicast
+ !
+ neighbor-group RR
+  remote-as 65000
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy PL-IBGP-RR-OUT out
+  !
+ !
+ neighbor 10.1.0.2
+  remote-as 65001
+  address-family ipv4 unicast
+   route-policy PL-EBGP-65001-IN in
+   route-policy PL-EBGP-CE2-OUT out
+  !
+ !
+ neighbor 10.1.0.4
+  remote-as 65001
+  address-family ipv4 unicast
+   route-policy PL-EBGP-65001-IN in
+   route-policy PL-EBGP-CE1-OUT out
+  !
+ !
+ neighbor 172.16.0.201
+  use neighbor-group RR
+ !
+ neighbor 172.16.0.202
+  use neighbor-group RR
+ !
+!
+mpls oam
+!
+mpls ldp
+ interface GigabitEthernet0/0/0/2
+ !
+ interface GigabitEthernet0/0/0/3
+ !
+!
+ssh server v2
+lldp
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/0/0/0"/>
+        <interface id="1" name="GigabitEthernet0/0/0/1"/>
+        <interface id="2" name="GigabitEthernet0/0/0/2"/>
+        <interface id="3" name="GigabitEthernet0/0/0/3"/>
+    </node>
+    <node name="P2" type="SIMPLE" subtype="IOS XRv" location="677,545" vmImage="IOS XRv [0ae2f1ad-1a23-4884-9e68-fb02496091d9]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">hostname P2
+telnet vrf default ipv4 server max-servers 10
+domain ipv4 host p1 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8
+domain ipv4 host p2 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10
+domain ipv4 host ce1 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4
+domain ipv4 host ce2 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2
+domain ipv4 host ix3 192.168.20.3 10.2.0.3 10.2.34.3
+domain ipv4 host ix4 192.168.20.4 10.2.0.4 10.2.34.4
+domain ipv4 host pe1 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2
+domain ipv4 host pe2 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4
+domain ipv4 host pe3 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33
+domain ipv4 host pe4 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44
+domain ipv4 host rr1 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19
+domain ipv4 host rr2 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23
+line console
+ exec-timeout 0 0
+ session-timeout 0
+!
+line default
+ exec-timeout 0 0
+ session-timeout 0
+!
+vty-pool default 0 10 line-template default
+interface Loopback0
+ ipv4 address 172.16.0.2 255.255.255.255
+!
+interface MgmtEth0/0/CPU0/0
+ ipv4 address 10.255.0.32 255.255.0.0
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.5 255.255.255.254
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 10.0.0.18 255.255.255.254
+!
+interface GigabitEthernet0/0/0/2
+ ipv4 address 10.0.0.7 255.255.255.254
+!
+interface GigabitEthernet0/0/0/3
+ ipv4 address 10.0.0.25 255.255.255.254
+!
+interface GigabitEthernet0/0/0/4
+ ipv4 address 10.0.0.22 255.255.255.254
+!
+interface GigabitEthernet0/0/0/5
+ ipv4 address 10.0.0.10 255.255.255.254
+!
+interface preconfigure GigabitEthernet0/0/0/6
+!
+router isis mycore
+ is-type level-2-only
+ net 49.0000.1720.1600.0002.00
+ address-family ipv4 unicast
+  metric-style wide
+  maximum-paths 8
+ !
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/0
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/1
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/2
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/3
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/4
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/5
+  address-family ipv4 unicast
+  !
+ !
+!
+mpls oam
+!
+mpls ldp
+ interface GigabitEthernet0/0/0/0
+ !
+ interface GigabitEthernet0/0/0/2
+ !
+ interface GigabitEthernet0/0/0/3
+ !
+ interface GigabitEthernet0/0/0/5
+ !
+!
+ssh server v2
+lldp
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/0/0/0"/>
+        <interface id="1" name="GigabitEthernet0/0/0/1"/>
+        <interface id="2" name="GigabitEthernet0/0/0/2"/>
+        <interface id="3" name="GigabitEthernet0/0/0/3"/>
+        <interface id="4" name="GigabitEthernet0/0/0/4"/>
+        <interface id="5" name="GigabitEthernet0/0/0/5"/>
+    </node>
+    <node name="PE4" type="SIMPLE" subtype="IOS XRv" location="964,544" vmImage="IOS XRv [0ae2f1ad-1a23-4884-9e68-fb02496091d9]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">hostname PE4
+telnet vrf default ipv4 server max-servers 10
+domain ipv4 host p1 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8
+domain ipv4 host p2 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10
+domain ipv4 host ce1 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4
+domain ipv4 host ce2 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2
+domain ipv4 host ix3 192.168.20.3 10.2.0.3 10.2.34.3
+domain ipv4 host ix4 192.168.20.4 10.2.0.4 10.2.34.4
+domain ipv4 host pe1 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2
+domain ipv4 host pe2 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4
+domain ipv4 host pe3 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33
+domain ipv4 host pe4 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44
+domain ipv4 host rr1 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19
+domain ipv4 host rr2 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23
+line console
+ exec-timeout 0 0
+ session-timeout 0
+!
+line default
+ exec-timeout 0 0
+ session-timeout 0
+!
+vty-pool default 0 10 line-template default
+interface Loopback0
+ ipv4 address 172.16.0.44 255.255.255.255
+!
+interface MgmtEth0/0/CPU0/0
+ ipv4 address 10.255.0.24 255.255.0.0
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.11 255.255.255.254
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 10.0.0.13 255.255.255.254
+!
+interface GigabitEthernet0/0/0/2
+!
+interface GigabitEthernet0/0/0/2.1031
+ ipv4 address 10.2.0.44 255.255.255.0
+ encapsulation dot1q 1031
+!
+interface preconfigure GigabitEthernet0/0/0/3
+!
+interface preconfigure GigabitEthernet0/0/0/4
+ shutdown
+!
+interface preconfigure GigabitEthernet0/0/0/5
+ shutdown
+!
+interface preconfigure GigabitEthernet0/0/0/6
+ shutdown
+!
+route-policy PL-IBGP-RR-OUT
+  set next-hop self
+end-policy
+!
+route-policy PL-EBGP-65002-IN
+  pass
+end-policy
+!
+route-policy PL-EBGP-65002-OUT
+  pass
+end-policy
+!
+router isis mycore
+ is-type level-2-only
+ net 49.0000.1720.1600.0044.00
+ address-family ipv4 unicast
+  metric-style wide
+ !
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/0
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/1
+  address-family ipv4 unicast
+  !
+ !
+!
+router bgp 65000
+ address-family ipv4 unicast
+ !
+ neighbor-group RR
+  remote-as 65000
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-policy PL-IBGP-RR-OUT out
+  !
+ !
+ neighbor 10.2.0.4
+  remote-as 65002
+  address-family ipv4 unicast
+   route-policy PL-EBGP-65002-IN in
+   route-policy PL-EBGP-65002-OUT out
+  !
+ !
+ neighbor 172.16.0.201
+  use neighbor-group RR
+ !
+ neighbor 172.16.0.202
+  use neighbor-group RR
+ !
+!
+mpls oam
+!
+mpls ldp
+ interface GigabitEthernet0/0/0/0
+ !
+ interface GigabitEthernet0/0/0/1
+ !
+!
+ssh server v2
+lldp
+!
+end
+</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/0/0/0"/>
+        <interface id="1" name="GigabitEthernet0/0/0/1"/>
+        <interface id="2" name="GigabitEthernet0/0/0/2"/>
+    </node>
+    <node name="RR2" type="SIMPLE" subtype="IOS XRv" location="776,368" vmImage="IOS XRv [0ae2f1ad-1a23-4884-9e68-fb02496091d9]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">hostname RR2
+telnet vrf default ipv4 server max-servers 100
+domain ipv4 host p1 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8
+domain ipv4 host p2 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10
+domain ipv4 host ce1 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4
+domain ipv4 host ce2 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2
+domain ipv4 host ix3 192.168.20.3 10.2.0.3 10.2.34.3
+domain ipv4 host ix4 192.168.20.4 10.2.0.4 10.2.34.4
+domain ipv4 host pe1 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2
+domain ipv4 host pe2 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4
+domain ipv4 host pe3 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33
+domain ipv4 host pe4 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44
+domain ipv4 host rr1 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19
+domain ipv4 host rr2 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23
+line console
+ exec-timeout 0 0
+ session-timeout 0
+!
+line default
+ exec-timeout 0 0
+ session-timeout 0
+!
+vty-pool default 0 50 line-template default
+interface Loopback0
+ ipv4 address 172.16.0.202 255.255.255.255
+!
+interface MgmtEth0/0/CPU0/0
+ ipv4 address 10.255.0.42 255.255.255.0
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.21 255.255.255.254
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 10.0.0.15 255.255.255.254
+!
+interface GigabitEthernet0/0/0/2
+ ipv4 address 10.0.0.23 255.255.255.254
+!
+interface GigabitEthernet0/0/0/3
+ shutdown
+!
+interface GigabitEthernet0/0/0/4
+ shutdown
+!
+interface GigabitEthernet0/0/0/5
+ shutdown
+!
+interface GigabitEthernet0/0/0/6
+ shutdown
+!
+router static
+ address-family ipv4 unicast
+  0.0.0.0/0 Null0
+ !
+!
+router isis mycore
+ set-overload-bit level 2
+ is-type level-2-only
+ net 49.0001.1720.1600.0202.00
+ address-family ipv4 unicast
+  metric-style wide
+ !
+ interface Loopback0
+  passive
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/0
+  address-family ipv4 unicast
+   metric 100
+  !
+ !
+ interface GigabitEthernet0/0/0/1
+  address-family ipv4 unicast
+  !
+ !
+ interface GigabitEthernet0/0/0/2
+  address-family ipv4 unicast
+  !
+ !
+!
+router bgp 65000
+ address-family ipv4 unicast
+ !
+ neighbor-group CLIENTS
+  remote-as 65000
+  cluster-id 172.16.0.202
+  update-source Loopback0
+  address-family ipv4 unicast
+   route-reflector-client
+  !
+ !
+ neighbor 172.16.0.11
+  use neighbor-group CLIENTS
+ !
+ neighbor 172.16.0.22
+  use neighbor-group CLIENTS
+ !
+ neighbor 172.16.0.33
+  use neighbor-group CLIENTS
+ !
+ neighbor 172.16.0.44
+  use neighbor-group CLIENTS
+ !
+ neighbor 172.16.0.201
+  remote-as 65000
+  update-source Loopback0
+  address-family ipv4 unicast
+  !
+ !
+!
+ssh server v2
+lldp
+!
+end
+</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/0/0/0"/>
+        <interface id="1" name="GigabitEthernet0/0/0/1"/>
+        <interface id="2" name="GigabitEthernet0/0/0/2"/>
+    </node>
+    <node name="unmanagedswitch-1" type="SIMPLE" subtype="Unmanaged Switch" location="154,379">
+        <interface id="0" name="link1"/>
+        <interface id="1" name="link2"/>
+        <interface id="2" name="link3"/>
+    </node>
+    <node name="unmanagedswitch-2" type="SIMPLE" subtype="Unmanaged Switch" location="1039,368">
+        <interface id="0" name="link1"/>
+        <interface id="1" name="link2"/>
+        <interface id="2" name="link3"/>
+        <interface id="3" name="link4"/>
+    </node>
+    <node name="unmanagedswitch-3" type="SIMPLE" subtype="Unmanaged Switch" location="1225,364">
+        <interface id="0" name="link1"/>
+        <interface id="1" name="link2"/>
+        <interface id="2" name="link3"/>
+    </node>
+    <node name="PE1" type="SIMPLE" subtype="vSRX" location="379,177" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]" ipv4="192.168.0.2">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="config" type="String">system {
+    host-name PE1;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    static-host-mapping {
+        CE1 inet [ 192.168.10.1 10.1.12.1 10.1.0.0 10.1.0.4 ];
+        CE2 inet [ 192.168.10.2 10.1.12.2 10.1.0.6 10.1.0.2 ];
+        PE1 inet [ 172.16.0.11 10.1.0.1 10.1.0.7 10.0.0.0 10.0.0.2 ];
+        PE2 inet [ 172.16.0.22 10.1.0.3 10.1.0.5 10.0.0.1 10.0.0.4 ];
+        PE3 inet [ 172.16.0.33 10.0.0.9 10.0.0.12 10.2.0.33 ];
+        PE4 inet [ 172.16.0.44 10.0.0.11 10.0.0.13 10.2.0.44 ];
+        P1 inet [ 172.16.0.1 10.0.0.3 10.0.0.16 10.0.0.6 10.0.0.20 10.0.0.8 ];
+        P2 inet [ 172.16.0.2 10.0.0.5 10.0.0.18 10.0.0.7 10.0.0.22 10.0.0.10 ];
+        RR1 inet [ 172.16.0.201 10.0.0.17 10.0.0.14 10.0.0.19 ];
+        RR2 inet [ 172.16.0.202 10.0.0.21 10.0.0.15 10.0.0.23 ];
+        IX3 inet [ 192.168.20.3 10.2.0.3 10.2.34.3 ];
+        IX4 inet [ 192.168.20.4 10.2.0.4 10.2.34.4 ];
+    }
+    services {
+        ssh;
+        telnet;
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:d9:2b;
+        unit 0 {
+            family inet {
+                address 10.255.0.21/16;
+            }
+        }
+    }
+    ge-0/0/1 {
+        vlan-tagging;
+        mac 00:50:56:8b:e4:93;
+        unit 1011 {
+            vlan-id 1011;
+            family inet {
+                address 10.1.0.1/31;
+            }
+        }
+    }
+    ge-0/0/2 {
+        vlan-tagging;
+        mac 00:50:56:8b:32:4a;
+        unit 1021 {
+            vlan-id 1021;
+            family inet {
+                address 10.1.0.7/31;
+            }
+        }
+    }
+    ge-0/0/3 {
+        mac 00:50:56:8b:3a:62;
+        unit 0 {
+            family inet {
+                address 10.0.0.0/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    ge-0/0/4 {
+        mac 00:50:56:8b:61:e3;
+        unit 0 {
+            family inet {
+                address 10.0.0.2/31;
+            }
+            family iso;
+            family mpls;
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.0.11/32;
+            }
+            family iso {
+                address 49.0000.1720.1600.0011.00;
+            }
+        }
+    }
+}
+routing-options {
+    static {
+        route 0.0.0.0/0 discard;
+    }
+    router-id 172.16.0.11;
+    autonomous-system 65000;
+    forwarding-table {
+        export PL-LB;
+    }
+}
+protocols {
+    mpls {
+        icmp-tunneling;
+        interface ge-0/0/3.0;
+        interface ge-0/0/4.0;
+    }
+    bgp {
+        group EBGP-65001 {
+            peer-as 65001;
+            neighbor 10.1.0.0 {
+                export PL-EBGP-CE1-OUT;
+            }
+            neighbor 10.1.0.6 {
+                export PL-EBGP-CE2-OUT;
+            }
+        }
+        group IBGP-RR {
+            type internal;
+            local-address 172.16.0.11;
+            family inet {
+                unicast;
+            }
+            export PL-IBGP-RR-OUT;
+            neighbor 172.16.0.201;
+            neighbor 172.16.0.202;
+        }
+    }
+    isis {
+        level 1 disable;
+        level 2 wide-metrics-only;
+        interface ge-0/0/3.0;
+        interface ge-0/0/4.0;
+        interface lo0.0;
+    }
+    ldp {
+        track-igp-metric;
+        interface ge-0/0/3.0;
+        interface ge-0/0/4.0;
+        interface lo0.0;
+    }
+    lldp {
+        interface all;
+    }
+}
+policy-options {
+    policy-statement PL-EBGP-CE1-OUT {
+        term BGP {
+            then {
+                metric 100;
+            }
+        }
+    }
+    policy-statement PL-EBGP-CE2-OUT {
+        term BGP {
+            then {
+                metric 200;
+            }
+        }
+    }
+    policy-statement PL-IBGP-RR-OUT {
+        term NHS {
+            from family inet;
+            then {
+                next-hop self;
+            }
+        }
+    }
+    policy-statement PL-LB {
+        then {
+            load-balance per-packet;
+        }
+    }
+}
+</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1" ipv4="10.0.128.17" netPrefixLenV4="30"/>
+        <interface id="1" name="ge-0/0/2" ipv4="10.0.0.9" netPrefixLenV4="30"/>
+        <interface id="2" name="ge-0/0/3" ipv4="10.0.128.29" netPrefixLenV4="30"/>
+        <interface id="3" name="ge-0/0/4" ipv4="10.0.128.9" netPrefixLenV4="30"/>
+    </node>
+    <node name="H1" type="SIMPLE" subtype="IOSv" location="36,379">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname H1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+logging buffered 10000
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!         
+!
+redundancy
+!
+!
+ip tcp synwait-time 7
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0/0
+ ip address 10.255.0.23 255.255.0.0
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1.1001
+ encapsulation dot1Q 1001
+ ip address 10.1.12.10 255.255.255.0
+!
+ip forward-protocol nd
+!
+ip bgp-community new-format
+!
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 0.0.0.0 10.1.12.1
+!
+!
+!
+!         
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+ privilege level 15
+ logging synchronous
+line aux 0
+line vty 0 4
+ privilege level 15
+ no login
+ transport input none
+!
+no scheduler allocate
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+    </node>
+    <node name="H3" type="SIMPLE" subtype="IOSv" location="1355,361">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname H3
+!
+boot-start-marker
+boot-end-marker
+!
+!
+logging buffered 10000
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!         
+!
+redundancy
+!
+!
+ip tcp synwait-time 7
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0/0
+ ip address 10.255.0.24 255.255.0.0
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ no ip address
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1.1001
+ encapsulation dot1Q 1041
+ ip address 10.2.34.30 255.255.255.0
+!
+ip forward-protocol nd
+!
+ip bgp-community new-format
+!
+no ip http server
+no ip http secure-server
+ip route 0.0.0.0 0.0.0.0 10.2.34.3
+!
+!
+!
+!         
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+ privilege level 15
+ logging synchronous
+line aux 0
+line vty 0 4
+ privilege level 15
+ no login
+ transport input none
+!
+no scheduler allocate
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+    </node>
+    <annotations/>
+    <connection dst="/virl:topology/virl:node[13]/virl:interface[2]" src="/virl:topology/virl:node[10]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[13]/virl:interface[3]" src="/virl:topology/virl:node[6]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[13]/virl:interface[4]" src="/virl:topology/virl:node[7]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[14]/virl:interface[1]" src="/virl:topology/virl:node[6]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[14]/virl:interface[2]" src="/virl:topology/virl:node[7]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[12]/virl:interface[3]" src="/virl:topology/virl:node[2]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[8]/virl:interface[1]" src="/virl:topology/virl:node[2]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[9]/virl:interface[1]" src="/virl:topology/virl:node[8]/virl:interface[4]"/>
+    <connection dst="/virl:topology/virl:node[12]/virl:interface[2]" src="/virl:topology/virl:node[1]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[8]/virl:interface[2]" src="/virl:topology/virl:node[1]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[10]/virl:interface[1]" src="/virl:topology/virl:node[9]/virl:interface[6]"/>
+    <connection dst="/virl:topology/virl:node[11]/virl:interface[3]" src="/virl:topology/virl:node[9]/virl:interface[5]"/>
+    <connection dst="/virl:topology/virl:node[1]/virl:interface[2]" src="/virl:topology/virl:node[15]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[15]/virl:interface[2]" src="/virl:topology/virl:node[2]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[15]/virl:interface[3]" src="/virl:topology/virl:node[8]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[3]/virl:interface[1]" src="/virl:topology/virl:node[15]/virl:interface[4]"/>
+    <connection dst="/virl:topology/virl:node[11]/virl:interface[1]" src="/virl:topology/virl:node[3]/virl:interface[5]"/>
+    <connection dst="/virl:topology/virl:node[9]/virl:interface[3]" src="/virl:topology/virl:node[3]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[9]/virl:interface[4]" src="/virl:topology/virl:node[3]/virl:interface[4]"/>
+    <connection dst="/virl:topology/virl:node[5]/virl:interface[1]" src="/virl:topology/virl:node[3]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[11]/virl:interface[2]" src="/virl:topology/virl:node[5]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[9]/virl:interface[2]" src="/virl:topology/virl:node[5]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[4]/virl:interface[1]" src="/virl:topology/virl:node[3]/virl:interface[6]"/>
+    <connection dst="/virl:topology/virl:node[10]/virl:interface[2]" src="/virl:topology/virl:node[4]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[13]/virl:interface[1]" src="/virl:topology/virl:node[4]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[12]/virl:interface[1]" src="/virl:topology/virl:node[16]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[14]/virl:interface[3]" src="/virl:topology/virl:node[17]/virl:interface[1]"/>
+</topology>

@@ -1,0 +1,873 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<topology xmlns="http://www.cisco.com/VIRL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.95" xsi:schemaLocation="http://www.cisco.com/VIRL https://raw.github.com/CiscoVIRL/schema/v0.95/virl.xsd">
+    <node name="spine-01" type="SIMPLE" subtype="NX-OSv 9000" location="455,279" vmImage="NX-OSv 9000 [7ff506ad-0f48-467a-a808-062ce3933e94]" ipv4="192.168.0.2">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">!Command: show running-config
+!Time: Tue Jan 31 16:39:04 2017
+
+version 7.0(3)I5(1)
+power redundancy-mode combined force
+
+hostname spine-01
+policy-map type network-qos jumbo
+  class type network-qos class-default
+    mtu 9216
+vdc spine-01 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 96 maximum 96
+  limit-resource u6route-mem minimum 24 maximum 24
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+feature telnet
+feature bgp
+feature pim
+feature isis
+feature vn-segment-vlan-based
+feature nv overlay
+
+no password strength-check
+username admin password 5 $1$KuOSBsvW$Cy0TSD..gEBGBPjzpDgf51  role network-admin
+username cisco password 5 $1$Nk7ZkwH0$fyiRmMMfIheqE3BqvcL0C1  role network-operator
+username cisco role network-admin
+username lab password 5 $1$buoy/oqy$.EXQz8rCn72ii8qtdldj00  role network-admin
+ip domain-lookup
+system qos
+  service-policy type network-qos jumbo
+snmp-server user lab network-admin auth md5 0x5ceb414591539ee35159fca86fdfa101 priv 0x5ceb414591539ee35159fca86fdfa101 localizedkey
+snmp-server user admin network-admin auth md5 0x328945d53e05e8e7207f8c20b142f0b7 priv 0x328945d53e05e8e7207f8c20b142f0b7 localizedkey
+snmp-server user cisco network-operator auth md5 0xeed3bb6da0b608ae509c34dc52f852b3 priv 0xeed3bb6da0b608ae509c34dc52f852b3 localizedkey
+snmp-server user cisco network-admin
+rmon event 1 description FATAL(1) owner PMON@FATAL
+rmon event 2 description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 description ERROR(3) owner PMON@ERROR
+rmon event 4 description WARNING(4) owner PMON@WARNING
+rmon event 5 description INFORMATION(5) owner PMON@INFO
+
+vlan 1
+ip pim rp-address 192.168.2.1 group-list 239.239.0.0/16
+ip pim log-neighbor-changes
+ip pim ssm range 232.0.0.0/8
+ip pim anycast-rp 192.168.2.1 192.168.1.1
+ip pim anycast-rp 192.168.2.1 192.168.2.1
+
+key chain ENSE
+  key 1
+    key-string 7 132039212e
+vrf context management
+hardware forwarding unicast trace
+
+
+interface Ethernet1/1
+  description to leaf-02
+  no switchport
+  mac-address fa16.3e00.0001
+  no ip redirects
+  ip address 172.16.0.6/31
+  no ipv6 redirects
+  isis network point-to-point
+  isis circuit-type level-1
+  isis authentication-type md5 level-1
+  isis authentication key-chain ENSE level-1
+  ip router isis ENSE
+  no isis passive-interface level-1
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/2
+  description to leaf-01
+  no switchport
+  mac-address fa16.3e00.0002
+  no ip redirects
+  ip address 172.16.0.2/31
+  no ipv6 redirects
+  isis network point-to-point
+  isis circuit-type level-1
+  isis authentication-type md5 level-1
+  isis authentication key-chain ENSE level-1
+  ip router isis ENSE
+  no isis passive-interface level-1
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/3
+  description to spine-02
+  no switchport
+  mac-address fa16.3e00.0003
+  no ip redirects
+  ip address 172.16.0.0/31
+  no ipv6 redirects
+  isis network point-to-point
+  isis circuit-type level-1
+  isis authentication-type md5 level-1
+  isis authentication key-chain ENSE level-1
+  ip router isis ENSE
+  no isis passive-interface level-1
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+
+interface Ethernet1/6
+
+interface Ethernet1/7
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface mgmt0
+  description OOB Management
+  vrf member management
+  ip address 10.255.0.203/16
+
+interface loopback0
+  description Loopback
+  ip address 192.168.0.1/32
+
+interface loopback17
+  ip address 192.168.1.1/32
+  ip router isis ENSE
+  ip pim sparse-mode
+
+interface loopback18
+  ip address 192.168.2.1/32
+  isis network point-to-point
+  isis circuit-type level-1
+  ip router isis ENSE
+  ip pim sparse-mode
+line console
+line vty
+router isis ENSE
+  net 49.0001.0001.0001.0001.00
+  is-type level-1
+  maximum-paths 32
+  lsp-mtu 4352
+  log-adjacency-changes
+  authentication-type md5 level-1
+  authentication key-chain ENSE level-1
+  address-family ipv4 unicast</entry>
+        </extensions>
+        <interface id="0" name="Ethernet1/1" ipv4="10.0.0.10" netPrefixLenV4="30"/>
+        <interface id="1" name="Ethernet1/2" ipv4="10.0.0.6" netPrefixLenV4="30"/>
+        <interface id="2" name="Ethernet1/3" ipv4="10.0.0.17" netPrefixLenV4="30"/>
+    </node>
+    <node name="spine-02" type="SIMPLE" subtype="NX-OSv 9000" location="740,282" vmImage="NX-OSv 9000 [7ff506ad-0f48-467a-a808-062ce3933e94]" ipv4="192.168.0.3">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">!Command: show running-config
+!Time: Tue Jan 31 16:39:04 2017
+
+version 7.0(3)I5(1)
+power redundancy-mode combined force
+
+hostname spine-02
+policy-map type network-qos jumbo
+  class type network-qos class-default
+    mtu 9216
+vdc spine-02 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 96 maximum 96
+  limit-resource u6route-mem minimum 24 maximum 24
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+feature telnet
+feature bgp
+feature pim
+feature isis
+feature vn-segment-vlan-based
+feature nv overlay
+
+no password strength-check
+username admin password 5 $1$KuOSBsvW$Cy0TSD..gEBGBPjzpDgf51  role network-admin
+username cisco password 5 $1$Nk7ZkwH0$fyiRmMMfIheqE3BqvcL0C1  role network-operator
+username cisco role network-admin
+username lab password 5 $1$buoy/oqy$.EXQz8rCn72ii8qtdldj00  role network-admin
+ip domain-lookup
+system qos
+  service-policy type network-qos jumbo
+snmp-server user lab network-admin auth md5 0x5ceb414591539ee35159fca86fdfa101 priv 0x5ceb414591539ee35159fca86fdfa101 localizedkey
+snmp-server user admin network-admin auth md5 0x328945d53e05e8e7207f8c20b142f0b7 priv 0x328945d53e05e8e7207f8c20b142f0b7 localizedkey
+snmp-server user cisco network-operator auth md5 0x91ccd16d8869e57f83adb3bebe76755e priv 0x91ccd16d8869e57f83adb3bebe76755e localizedkey
+snmp-server user cisco network-admin
+rmon event 1 description FATAL(1) owner PMON@FATAL
+rmon event 2 description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 description ERROR(3) owner PMON@ERROR
+rmon event 4 description WARNING(4) owner PMON@WARNING
+rmon event 5 description INFORMATION(5) owner PMON@INFO
+
+vlan 1
+ip pim rp-address 192.168.2.1 group-list 239.239.0.0/16
+ip pim log-neighbor-changes
+ip pim ssm range 232.0.0.0/8
+ip pim anycast-rp 192.168.2.1 192.168.1.1
+ip pim anycast-rp 192.168.2.1 192.168.2.1
+
+key chain ENSE
+  key 1
+    key-string 7 112c373632
+vrf context management
+hardware forwarding unicast trace
+
+
+interface Ethernet1/1
+  description to leaf-02
+  no switchport
+  mac-address fa16.3e00.0008
+  no ip redirects
+  ip address 172.16.0.8/31
+  no ipv6 redirects
+  isis network point-to-point
+  isis circuit-type level-1
+  isis authentication-type md5 level-1
+  isis authentication key-chain ENSE level-1
+  ip router isis ENSE
+  no isis passive-interface level-1
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/2
+  description to leaf-01
+  no switchport
+  mac-address fa16.3e00.0009
+  no ip redirects
+  ip address 172.16.0.4/31
+  no ipv6 redirects
+  isis network point-to-point
+  isis circuit-type level-1
+  isis authentication-type md5 level-1
+  isis authentication key-chain ENSE level-1
+  ip router isis ENSE
+  no isis passive-interface level-1
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/3
+  description to spine-01
+  no switchport
+  mac-address fa16.3e00.000a
+  no ip redirects
+  ip address 172.16.0.1/31
+  no ipv6 redirects
+  isis network point-to-point
+  isis circuit-type level-1
+  isis authentication-type md5 level-1
+  isis authentication key-chain ENSE level-1
+  ip router isis ENSE
+  no isis passive-interface level-1
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+
+interface Ethernet1/6
+
+interface Ethernet1/7
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface mgmt0
+  description OOB Management
+  vrf member management
+  ip address 10.255.0.205/16
+
+interface loopback0
+  description Loopback
+  ip address 192.168.0.2/32
+
+interface loopback17
+  ip address 192.168.1.2/32
+  ip router isis ENSE
+  ip pim sparse-mode
+
+interface loopback18
+  ip address 192.168.2.1/32
+  isis network point-to-point
+  isis circuit-type level-1
+  ip router isis ENSE
+  ip pim sparse-mode
+line console
+line vty
+router isis ENSE
+  net 49.0001.0002.0002.0002.00
+  is-type level-1
+  maximum-paths 32
+  lsp-mtu 4352
+  log-adjacency-changes
+  authentication-type md5 level-1
+  authentication key-chain ENSE level-1
+  address-family ipv4 unicast</entry>
+        </extensions>
+        <interface id="0" name="Ethernet1/1" ipv4="10.0.0.22" netPrefixLenV4="30"/>
+        <interface id="1" name="Ethernet1/2" ipv4="10.0.0.14" netPrefixLenV4="30"/>
+        <interface id="2" name="Ethernet1/3" ipv4="10.0.0.18" netPrefixLenV4="30"/>
+    </node>
+    <node name="leaf-01" type="SIMPLE" subtype="NX-OSv 9000" location="455,518" vmImage="NX-OSv 9000 [7ff506ad-0f48-467a-a808-062ce3933e94]" ipv4="192.168.0.1">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">!Command: show running-config
+!Time: Tue Jan 31 16:39:03 2017
+
+version 7.0(3)I5(1)
+power redundancy-mode combined force
+
+hostname leaf-01
+policy-map type network-qos jumbo
+  class type network-qos class-default
+    mtu 9216
+vdc leaf-01 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 96 maximum 96
+  limit-resource u6route-mem minimum 24 maximum 24
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+feature telnet
+feature bgp
+feature pim
+feature isis
+feature vn-segment-vlan-based
+feature nv overlay
+
+no password strength-check
+username admin password 5 $1$KuOSBsvW$Cy0TSD..gEBGBPjzpDgf51  role network-admin
+username cisco password 5 $1$Nk7ZkwH0$fyiRmMMfIheqE3BqvcL0C1  role network-operator
+username cisco role network-admin
+username lab password 5 $1$buoy/oqy$.EXQz8rCn72ii8qtdldj00  role network-admin
+ip domain-lookup
+system qos
+  service-policy type network-qos jumbo
+snmp-server user lab network-admin auth md5 0x5ceb414591539ee35159fca86fdfa101 priv 0x5ceb414591539ee35159fca86fdfa101 localizedkey
+snmp-server user admin network-admin auth md5 0x328945d53e05e8e7207f8c20b142f0b7 priv 0x328945d53e05e8e7207f8c20b142f0b7 localizedkey
+snmp-server user cisco network-operator auth md5 0x1b5fddb6f49be4cf2dfc7de6bb665878 priv 0x1b5fddb6f49be4cf2dfc7de6bb665878 localizedkey
+snmp-server user cisco network-admin
+rmon event 1 description FATAL(1) owner PMON@FATAL
+rmon event 2 description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 description ERROR(3) owner PMON@ERROR
+rmon event 4 description WARNING(4) owner PMON@WARNING
+rmon event 5 description INFORMATION(5) owner PMON@INFO
+
+vlan 1,100
+ip pim rp-address 192.168.2.1 group-list 239.239.0.0/16
+ip pim log-neighbor-changes
+ip pim ssm range 232.0.0.0/8
+vlan 100
+  name CUST-100
+  vn-segment 1000
+
+spanning-tree pathcost method long
+spanning-tree port type edge bpduguard default
+spanning-tree loopguard default
+spanning-tree vlan 1-3967 priority 0
+key chain ENSE
+  key 1
+    key-string 7 106b272a20
+vrf context management
+hardware forwarding unicast trace
+
+
+interface nve1
+  no shutdown
+  source-interface loopback17
+  member vni 1000 mcast-group 239.239.0.1
+
+interface Ethernet1/1
+  description to spine-01
+  no switchport
+  mac-address fa16.3e00.0005
+  no ip redirects
+  ip address 172.16.0.3/31
+  no ipv6 redirects
+  isis network point-to-point
+  isis circuit-type level-1
+  isis authentication-type md5 level-1
+  isis authentication key-chain ENSE level-1
+  ip router isis ENSE
+  no isis passive-interface level-1
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/2
+  description to spine-02
+  no switchport
+  mac-address fa16.3e00.0006
+  no ip redirects
+  ip address 172.16.0.5/31
+  no ipv6 redirects
+  isis network point-to-point
+  isis circuit-type level-1
+  isis authentication-type md5 level-1
+  isis authentication key-chain ENSE level-1
+  ip router isis ENSE
+  no isis passive-interface level-1
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/3
+  switchport access vlan 100
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+
+interface Ethernet1/6
+
+interface Ethernet1/7
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface mgmt0
+  description OOB Management
+  vrf member management
+  ip address 10.255.0.201/16
+
+interface loopback0
+  description Loopback
+  ip address 192.168.0.3/32
+
+interface loopback17
+  ip address 192.168.1.3/32
+  ip router isis ENSE
+  ip pim sparse-mode
+line console
+line vty
+router isis ENSE
+  net 49.0001.0003.0003.0003.00
+  is-type level-1
+  maximum-paths 32
+  lsp-mtu 4352
+  log-adjacency-changes
+  authentication-type md5 level-1
+  authentication key-chain ENSE level-1
+  address-family ipv4 unicast</entry>
+        </extensions>
+        <interface id="0" name="Ethernet1/1" ipv4="10.0.0.5" netPrefixLenV4="30"/>
+        <interface id="1" name="Ethernet1/2" ipv4="10.0.0.13" netPrefixLenV4="30"/>
+        <interface id="2" name="Ethernet1/3"/>
+    </node>
+    <node name="leaf-02" type="SIMPLE" subtype="NX-OSv 9000" location="747,510" vmImage="NX-OSv 9000 [7ff506ad-0f48-467a-a808-062ce3933e94]" ipv4="192.168.0.4">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">!Command: show running-config
+!Time: Tue Jan 31 16:39:04 2017
+
+version 7.0(3)I5(1)
+power redundancy-mode combined force
+
+hostname leaf-02
+policy-map type network-qos jumbo
+  class type network-qos class-default
+    mtu 9216
+vdc leaf-02 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 96 maximum 96
+  limit-resource u6route-mem minimum 24 maximum 24
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+feature telnet
+feature bgp
+feature pim
+feature isis
+feature vn-segment-vlan-based
+feature nv overlay
+
+no password strength-check
+username admin password 5 $1$KuOSBsvW$Cy0TSD..gEBGBPjzpDgf51  role network-admin
+username cisco password 5 $1$Nk7ZkwH0$fyiRmMMfIheqE3BqvcL0C1  role network-operator
+username cisco role network-admin
+username lab password 5 $1$buoy/oqy$.EXQz8rCn72ii8qtdldj00  role network-admin
+ip domain-lookup
+system qos
+  service-policy type network-qos jumbo
+snmp-server user lab network-admin auth md5 0x5ceb414591539ee35159fca86fdfa101 priv 0x5ceb414591539ee35159fca86fdfa101 localizedkey
+snmp-server user admin network-admin auth md5 0x328945d53e05e8e7207f8c20b142f0b7 priv 0x328945d53e05e8e7207f8c20b142f0b7 localizedkey
+snmp-server user cisco network-operator auth md5 0xc1257fd842b1f83d88a57531411264d8 priv 0xc1257fd842b1f83d88a57531411264d8 localizedkey
+snmp-server user cisco network-admin
+
+vlan 1,100
+ip pim rp-address 192.168.2.1 group-list 239.239.0.0/16
+ip pim log-neighbor-changes
+ip pim ssm range 232.0.0.0/8
+vlan 100
+  name CUST-100
+  vn-segment 1000
+
+spanning-tree pathcost method long
+spanning-tree port type edge bpduguard default
+spanning-tree loopguard default
+spanning-tree vlan 1-3967 priority 0
+key chain ENSE
+  key 1
+    key-string 7 02232a682e
+vrf context management
+hardware forwarding unicast trace
+
+
+interface nve1
+  no shutdown
+  source-interface loopback17
+  member vni 1000 mcast-group 239.239.0.1
+
+interface Ethernet1/1
+  description to spine-01
+  no switchport
+  mac-address fa16.3e00.000c
+  no ip redirects
+  ip address 172.16.0.7/31
+  no ipv6 redirects
+  isis network point-to-point
+  isis circuit-type level-1
+  isis authentication-type md5 level-1
+  isis authentication key-chain ENSE level-1
+  ip router isis ENSE
+  no isis passive-interface level-1
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/2
+  description to spine-02
+  no switchport
+  mac-address fa16.3e00.000d
+  no ip redirects
+  ip address 172.16.0.9/31
+  no ipv6 redirects
+  isis network point-to-point
+  isis circuit-type level-1
+  isis authentication-type md5 level-1
+  isis authentication key-chain ENSE level-1
+  ip router isis ENSE
+  no isis passive-interface level-1
+  ip pim sparse-mode
+  no shutdown
+
+interface Ethernet1/3
+  switchport access vlan 100
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+
+interface Ethernet1/6
+
+interface Ethernet1/7
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface mgmt0
+  description OOB Management
+  vrf member management
+  ip address 10.255.0.202/16
+
+interface loopback0
+  description Loopback
+  ip address 192.168.0.4/32
+
+interface loopback17
+  ip address 192.168.1.4/32
+  ip router isis ENSE
+  ip pim sparse-mode
+line console
+line vty
+router isis ENSE
+  net 49.0001.0004.0004.0004.00
+  is-type level-1
+  maximum-paths 32
+  lsp-mtu 4352
+  log-adjacency-changes
+  authentication-type md5 level-1
+  authentication key-chain ENSE level-1
+  address-family ipv4 unicast</entry>
+        </extensions>
+        <interface id="0" name="Ethernet1/1" ipv4="10.0.0.9" netPrefixLenV4="30"/>
+        <interface id="1" name="Ethernet1/2" ipv4="10.0.0.21" netPrefixLenV4="30"/>
+        <interface id="2" name="Ethernet1/3"/>
+    </node>
+    <node name="Host-A" type="SIMPLE" subtype="IOSv" location="451,636">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">!
+! Last configuration change at 16:32:06 UTC Tue Jan 31 2017
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname Host-A
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0/0
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ ip address 10.0.0.1 255.255.255.0
+ duplex auto
+ speed auto
+ media-type rj45
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+banner exec `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner incoming `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner login `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+!
+line con 0
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+no scheduler allocate
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+    </node>
+    <node name="Host-B" type="SIMPLE" subtype="IOSv" location="752,628">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">!
+! Last configuration change at 16:32:05 UTC Tue Jan 31 2017
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname Host-B
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0/0
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ ip address 10.0.0.2 255.255.255.0
+ duplex auto
+ speed auto
+ media-type rj45
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+banner exec `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner incoming `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner login `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+!
+line con 0
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+no scheduler allocate
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+    </node>
+    <annotations/>
+    <connection dst="/virl:topology/virl:node[4]/virl:interface[1]" src="/virl:topology/virl:node[1]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[2]/virl:interface[1]" src="/virl:topology/virl:node[4]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[1]/virl:interface[2]" src="/virl:topology/virl:node[3]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[2]/virl:interface[2]" src="/virl:topology/virl:node[3]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[2]/virl:interface[3]" src="/virl:topology/virl:node[1]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[3]/virl:interface[3]" src="/virl:topology/virl:node[5]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[4]/virl:interface[3]" src="/virl:topology/virl:node[6]/virl:interface[1]"/>
+</topology>

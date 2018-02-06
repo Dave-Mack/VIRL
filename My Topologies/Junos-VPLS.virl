@@ -1,0 +1,971 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<topology xmlns="http://www.cisco.com/VIRL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.95" xsi:schemaLocation="http://www.cisco.com/VIRL https://raw.github.com/CiscoVIRL/schema/v0.95/virl.xsd">
+    <node name="lck50-r1" type="SIMPLE" subtype="vSRX" location="685,243" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]" vmFlavor="vSRX [8436553e-c3fb-45cc-ae22-50efde20f1af]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">version 12.1X47-D1.1;
+system {
+    host-name lab-lck50-r1;
+    root-authentication {
+        encrypted-password "$1$fSjJpvP1$pWSk/r4KYSIVx6/.R1/Sf0"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "$1$./pdMFXp$LTVddmTTxACQA6nKuca1S1"; ## SECRET-DATA
+            }
+        }
+        user lab {
+            uid 2001;
+            class super-user;
+            authentication {
+                encrypted-password "$1$n4PLV2J/$p73Z6aKMOo4T1n8.ZfZiW."; ## SECRET-DATA
+            }
+        }                               
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0;
+    }
+    ge-0/0/1 {
+        unit 0 {
+            family inet {
+                address 10.0.1.0/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/2 {
+        unit 0 {
+            family inet {
+                address 10.0.1.8/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/3 {                          
+        encapsulation ethernet-vpls;
+        unit 0;
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.0.0.50/32;
+            }
+        }
+    }
+}
+protocols {
+    ospf {
+        area 0.0.0.0 {
+            interface ge-0/0/1.0;
+            interface ge-0/0/2.0;
+            interface lo0.0 {
+                passive;
+            }
+        }
+    }
+    ldp {
+        interface ge-0/0/1.0;           
+        interface ge-0/0/2.0;
+        interface lo0.0;
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+routing-instances {
+    VPLS {
+        instance-type vpls;
+        interface ge-0/0/3.0;
+        protocols {
+            vpls {
+                no-tunnel-services;     
+                vpls-id 100;
+                mtu 1900;
+                neighbor 10.0.0.21;
+                neighbor 10.0.0.31;
+                neighbor 10.0.0.51;
+            }
+        }
+    }
+}</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+    </node>
+    <node name="lck21-r1" type="SIMPLE" subtype="vSRX" location="683,498" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]" vmFlavor="vSRX [8436553e-c3fb-45cc-ae22-50efde20f1af]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">version 12.1X47-D1.1;
+system {
+    host-name lab-lck21-r1;
+    root-authentication {
+        encrypted-password "$1$fSjJpvP1$pWSk/r4KYSIVx6/.R1/Sf0"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "$1$./pdMFXp$LTVddmTTxACQA6nKuca1S1"; ## SECRET-DATA
+            }
+        }
+        user lab {
+            uid 2001;
+            class super-user;
+            authentication {
+                encrypted-password "$1$n4PLV2J/$p73Z6aKMOo4T1n8.ZfZiW."; ## SECRET-DATA
+            }
+        }                               
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0;
+    }
+    ge-0/0/1 {
+        unit 0 {
+            family inet {
+                address 10.0.1.1/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/2 {
+        unit 0 {
+            family inet {
+                address 10.0.1.7/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/3 {                          
+        unit 0 {
+            family inet {
+                address 10.0.1.5/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/4 {
+        encapsulation ethernet-vpls;
+        unit 0;
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.0.0.21/32;
+            }
+        }
+    }
+}
+protocols {
+    ospf {
+        area 0.0.0.0 {
+            interface ge-0/0/1.0;       
+            interface ge-0/0/2.0;
+            interface ge-0/0/3.0;
+            interface lo0.0 {
+                passive;
+            }
+        }
+    }
+    ldp {
+        interface ge-0/0/1.0;
+        interface ge-0/0/2.0;
+        interface ge-0/0/3.0;
+        interface lo0.0;
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }                           
+        }
+    }
+}
+routing-instances {
+    VPLS {
+        instance-type vpls;
+        interface ge-0/0/4.0;
+        protocols {
+            vpls {
+                no-tunnel-services;
+                vpls-id 100;
+                mtu 1900;
+                neighbor 10.0.0.33;
+                neighbor 10.0.0.50;
+                neighbor 10.0.0.51;
+            }
+        }
+    }
+}</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+        <interface id="3" name="ge-0/0/4"/>
+    </node>
+    <node name="lck33-r1" type="SIMPLE" subtype="vSRX" location="947,496" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]" vmFlavor="vSRX [8436553e-c3fb-45cc-ae22-50efde20f1af]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">version 12.1X47-D1.1;
+system {
+    host-name lab-lck33-r1;
+    root-authentication {
+        encrypted-password "$1$fSjJpvP1$pWSk/r4KYSIVx6/.R1/Sf0"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "$1$./pdMFXp$LTVddmTTxACQA6nKuca1S1"; ## SECRET-DATA
+            }
+        }
+        user lab {
+            uid 2001;
+            class super-user;
+            authentication {
+                encrypted-password "$1$n4PLV2J/$p73Z6aKMOo4T1n8.ZfZiW."; ## SECRET-DATA
+            }
+        }                               
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0;
+    }
+    ge-0/0/1 {
+        unit 0 {
+            family inet {
+                address 10.0.1.9/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/2 {
+        unit 0 {
+            family inet {
+                address 10.0.1.3/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/3 {                          
+        unit 0 {
+            family inet {
+                address 10.0.1.4/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/4 {
+        encapsulation ethernet-vpls;
+        unit 0;
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.0.0.33/32;
+            }
+        }
+    }
+}
+protocols {
+    ospf {
+        area 0.0.0.0 {
+            interface ge-0/0/1.0;       
+            interface ge-0/0/2.0;
+            interface ge-0/0/3.0;
+            interface lo0.0 {
+                passive;
+            }
+        }
+    }
+    ldp {
+        interface ge-0/0/1.0;
+        interface ge-0/0/2.0;
+        interface ge-0/0/3.0;
+        interface lo0.0;
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }                           
+        }
+    }
+}
+routing-instances {
+    VPLS {
+        instance-type vpls;
+        interface ge-0/0/4.0;
+        protocols {
+            vpls {
+                no-tunnel-services;
+                vpls-id 100;
+                mtu 1900;
+                neighbor 10.0.0.50;
+                neighbor 10.0.0.51;
+                neighbor 10.0.0.21;
+            }
+        }
+    }
+}
+</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+        <interface id="3" name="ge-0/0/4"/>
+    </node>
+    <node name="lck51-r1" type="SIMPLE" subtype="vSRX" location="960,230" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]" vmFlavor="vSRX [8436553e-c3fb-45cc-ae22-50efde20f1af]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">version 12.1X47-D1.1;
+system {
+    host-name lab-lck51-r1;
+    root-authentication {
+        encrypted-password "$1$fSjJpvP1$pWSk/r4KYSIVx6/.R1/Sf0"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2000;
+            class super-user;
+            authentication {
+                encrypted-password "$1$./pdMFXp$LTVddmTTxACQA6nKuca1S1"; ## SECRET-DATA
+            }
+        }
+        user lab {
+            uid 2001;
+            class super-user;
+            authentication {
+                encrypted-password "$1$n4PLV2J/$p73Z6aKMOo4T1n8.ZfZiW."; ## SECRET-DATA
+            }
+        }                               
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        unit 0;
+    }
+    ge-0/0/1 {
+        unit 0 {
+            family inet {
+                address 10.0.1.6/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/2 {
+        unit 0 {
+            family inet {
+                address 10.0.1.2/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/3 {                          
+        encapsulation ethernet-vpls;
+        unit 0;
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 10.0.0.51/32;
+            }
+        }
+    }
+}
+protocols {
+    ospf {
+        area 0.0.0.0 {
+            interface ge-0/0/1.0;
+            interface ge-0/0/2.0;
+            interface lo0.0 {
+                passive;
+            }
+        }
+    }
+    ldp {
+        interface ge-0/0/1.0;           
+        interface ge-0/0/2.0;
+        interface lo0.0;
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+routing-instances {
+    VPLS {
+        instance-type vpls;
+        interface ge-0/0/3.0;
+        protocols {
+            vpls {
+                no-tunnel-services;     
+                vpls-id 100;
+                mtu 1900;
+                neighbor 10.0.0.21;
+                neighbor 10.0.0.31;
+                neighbor 10.0.0.50;
+            }
+        }
+    }
+}
+</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+    </node>
+    <node name="lck50-kg1" type="SIMPLE" subtype="IOSv" location="681,98" vmImage="IOSv [3d0c8311-24c5-4c2e-b8d9-571494c4efe4]" vmFlavor="IOSv [b7e40f8c-ce32-4ee4-95d4-9b92d288efb6]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">!
+! Last configuration change at 17:43:05 UTC Thu Aug 17 2017
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname lab-lck50-kg-1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0/0
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ ip address 172.16.0.50 255.255.0.0
+ duplex auto
+ speed auto
+ media-type rj45
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+banner exec `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner incoming `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner login `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+!
+line con 0
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+no scheduler allocate
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+    </node>
+    <node name="lck51-kg1" type="SIMPLE" subtype="IOSv" location="962,88" vmImage="IOSv [3d0c8311-24c5-4c2e-b8d9-571494c4efe4]" vmFlavor="IOSv [b7e40f8c-ce32-4ee4-95d4-9b92d288efb6]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">!
+! Last configuration change at 17:42:18 UTC Thu Aug 17 2017
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname lab-lck51-kg-1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0/0
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ ip address 172.16.0.51 255.255.0.0
+ duplex auto
+ speed auto
+ media-type rj45
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+banner exec `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner incoming `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner login `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+!
+line con 0
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+no scheduler allocate
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+    </node>
+    <node name="lck21-kg1" type="SIMPLE" subtype="IOSv" location="682,627" vmImage="IOSv [3d0c8311-24c5-4c2e-b8d9-571494c4efe4]" vmFlavor="IOSv [b7e40f8c-ce32-4ee4-95d4-9b92d288efb6]">
+        <extensions>
+            <entry key="config" type="String">!
+! Last configuration change at 17:42:04 UTC Thu Aug 17 2017
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname lab-lck21-kg-1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0/0
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ ip address 172.16.0.21 255.255.0.0
+ duplex auto
+ speed auto
+ media-type rj45
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+banner exec `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner incoming `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner login `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+!
+line con 0
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+no scheduler allocate
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+    </node>
+    <node name="lck33-kg1" type="SIMPLE" subtype="IOSv" location="937,633" vmImage="IOSv [3d0c8311-24c5-4c2e-b8d9-571494c4efe4]" vmFlavor="IOSv [b7e40f8c-ce32-4ee4-95d4-9b92d288efb6]">
+        <extensions>
+            <entry key="config" type="String">!
+! Last configuration change at 17:40:50 UTC Thu Aug 17 2017
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname lab-lck33-kg-1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+redundancy
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface GigabitEthernet0/0
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ ip address 172.16.0.33 255.255.0.0
+ duplex auto
+ speed auto
+ media-type rj45
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+banner exec `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner incoming `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+banner login `
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************`
+!
+line con 0
+line aux 0
+line vty 0 4
+ login
+ transport input none
+!
+no scheduler allocate
+!
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/1"/>
+    </node>
+    <annotations/>
+    <connection dst="/virl:topology/virl:node[1]/virl:interface[1]" src="/virl:topology/virl:node[2]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[4]/virl:interface[1]" src="/virl:topology/virl:node[2]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[1]/virl:interface[2]" src="/virl:topology/virl:node[3]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[4]/virl:interface[2]" src="/virl:topology/virl:node[3]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[3]/virl:interface[3]" src="/virl:topology/virl:node[2]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[7]/virl:interface[1]" src="/virl:topology/virl:node[2]/virl:interface[4]"/>
+    <connection dst="/virl:topology/virl:node[8]/virl:interface[1]" src="/virl:topology/virl:node[3]/virl:interface[4]"/>
+    <connection dst="/virl:topology/virl:node[5]/virl:interface[1]" src="/virl:topology/virl:node[1]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[6]/virl:interface[1]" src="/virl:topology/virl:node[4]/virl:interface[3]"/>
+</topology>

@@ -1,0 +1,971 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<topology xmlns="http://www.cisco.com/VIRL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.95" xsi:schemaLocation="http://www.cisco.com/VIRL https://raw.github.com/CiscoVIRL/schema/v0.95/virl.xsd">
+    <node name="L1" type="SIMPLE" subtype="vSRX" location="702,176" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">system {
+    host-name 00-L1;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ftp;
+        ssh;
+        telnet;
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:b6:a0;
+        unit 0 {
+            family inet {
+                address 10.255.0.23/16;
+            }
+        }
+    }
+    ge-0/0/1 {
+        mac 00:50:56:8b:7e:53;
+        unit 0 {
+            family inet {
+                address 10.0.0.1/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/2 {
+        mac 00:50:56:8b:65:dd;
+        unit 0 {
+            family inet {
+                address 10.0.0.6/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/3 {
+        mac 00:50:56:8b:61:02;
+        unit 0 {
+            family inet {
+                address 10.0.0.4/31;
+            }
+            family mpls;
+        }
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.2.11/32;
+            }
+        }
+    }
+}
+routing-options {
+    interface-routes {
+        rib-group inet RG-LOCAL-INTERFACES;
+    }
+    rib-groups {
+        RG-LOCAL-INTERFACES {
+            import-rib [ inet.0 inet.3 ];
+            import-policy PL-LOCAL-LOOPBACK;
+        }
+    }
+    router-id 172.16.2.11;
+    autonomous-system 65201;
+    forwarding-table {
+        export PL-LB;
+    }
+}
+protocols {
+    mpls {
+        icmp-tunneling;
+    }
+    bgp {
+        group eBGP-LU-65101 {
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            export PL-LOCAL-LOOPBACK;
+            peer-as 65101;
+            neighbor 10.0.0.5;
+        }
+        group eBGP-LU-65102 {
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            export PL-LOCAL-LOOPBACK;
+            peer-as 65102;
+            neighbor 10.0.0.7;
+        }
+        group eBGP-LU-65301 {
+            family inet {
+                labeled-unicast {
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            export PL-LOCAL-LOOPBACK;
+            peer-as 65301;
+            neighbor 10.0.0.0;
+        }
+    }
+}
+policy-options {
+    policy-statement PL-LB {
+        then {
+            load-balance per-packet;
+        }
+    }
+    policy-statement PL-LOCAL-LOOPBACK {
+        term LOCAL-LOOPBACK {
+            from interface lo0.0;
+            then accept;
+        }
+    }
+}</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+        <interface id="3" name="ge-0/0/4"/>
+        <interface id="4" name="ge-0/0/5"/>
+        <interface id="5" name="ge-0/0/6"/>
+    </node>
+    <node name="S1" type="SIMPLE" subtype="vSRX" location="974,176" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">system {
+    host-name 00-S1;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:c1:1a;
+        unit 0 {
+            family inet {
+                address 10.255.0.31/16;
+            }
+        }
+    }
+    ge-0/0/1 {
+        mac 00:50:56:8b:47:b1;
+        unit 0 {
+            family inet {
+                address 10.0.0.5/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/2 {
+        mac 00:50:56:8b:c8:fd;
+        unit 0 {
+            family inet {
+                address 10.0.0.9/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/3 {
+        mac 00:50:56:8b:50:47;
+        unit 0 {
+            family inet {
+                address 10.0.0.14/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/4 {
+        mac 00:50:56:8b:7b:fe;
+        unit 0 {
+            family inet {
+                address 10.0.0.12/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/5 {
+        mac 00:50:56:8b:46:5a;
+    }
+    ge-0/0/6 {
+        mac 00:50:56:8b:23:e1;
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.1.1/32;
+            }
+        }
+    }
+}
+routing-options {
+    interface-routes {
+        rib-group inet RG-LOCAL-INTERFACES;
+    }
+    static {
+        route 0.0.0.0/0 discard;
+    }
+    rib-groups {
+        RG-LOCAL-INTERFACES {
+            import-rib [ inet.0 inet.3 ];
+            import-policy PL-LOCAL-LOOPBACK;
+        }
+        RG-SERVERS {
+            import-rib [ inet.3 inet.0 ];
+            import-policy PL-SERVERS;
+        }
+    }
+    router-id 172.16.1.1;
+    autonomous-system 65101;
+    forwarding-table {
+        export PL-LB;
+    }
+}
+protocols {
+    mpls {
+        icmp-tunneling;
+    }
+    bgp {
+        group eBGP-LU-65201 {
+            family inet {
+                labeled-unicast {
+                    rib-group RG-SERVERS;
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            export PL-LOCAL-LOOPBACK;
+            peer-as 65201;
+            neighbor 10.0.0.4;
+        }
+        group eBGP-LU-65202 {
+            family inet {
+                labeled-unicast {
+                    rib-group RG-SERVERS;
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            export PL-LOCAL-LOOPBACK;
+            peer-as 65202;
+            neighbor 10.0.0.8;
+        }
+        group eBGP-INET-65301 {
+            multihop {
+                no-nexthop-change;
+            }
+            local-address 172.16.1.1;
+            export PL-VM;
+            peer-as 65301;
+            neighbor 172.16.3.11;
+        }
+        group eBGP-INET-65302 {
+            multihop {
+                no-nexthop-change;
+            }
+            local-address 172.16.1.1;
+            export PL-VM;
+            peer-as 65302;
+            neighbor 172.16.3.22;
+        }
+    }
+}
+policy-options {
+    policy-statement PL-LB {
+        then {
+            load-balance per-packet;
+        }
+    }
+    policy-statement PL-LOCAL-LOOPBACK {
+        term LOCAL-LOOPBACK {
+            from interface lo0.0;
+            then {
+                community add RR;
+                accept;
+            }
+        }
+    }
+    policy-statement PL-SERVERS {
+        term SERVERS {
+            from community SERVER;
+            then accept;
+        }
+        then reject;
+    }
+    policy-statement PL-VM {
+        term VM {
+            from community VM;
+            then accept;
+        }
+        then reject;
+    }
+    community RR members 65000:1;
+    community SERVER members 65000:3;
+    community VM members 65000:100;
+}</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+    </node>
+    <node name="L2" type="SIMPLE" subtype="IOS XRv" location="703,562" vmImage="IOS XRv [0ae2f1ad-1a23-4884-9e68-fb02496091d9]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">hostname 00-L2
+telnet vrf default ipv4 server max-servers 10
+line console
+ exec-timeout 0 0
+ session-timeout 0
+!
+line default
+ exec-timeout 0 0
+ session-timeout 0
+!
+vty-pool default 0 10 line-template default
+interface Loopback0
+ ipv4 address 172.16.2.22 255.255.255.255
+!
+interface MgmtEth0/0/CPU0/0
+ ipv4 address 10.255.0.24 255.255.0.0
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.3 255.255.255.254
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 10.0.0.8 255.255.255.254
+!
+interface GigabitEthernet0/0/0/2
+ ipv4 address 10.0.0.10 255.255.255.254
+!
+route-policy PL-LOCAL-LOOPBACK
+  if destination in (172.16.2.22/32) then
+    pass
+  endif
+end-policy
+!
+router static
+ address-family ipv4 unicast
+  10.0.0.2/32 GigabitEthernet0/0/0/0
+  10.0.0.9/32 GigabitEthernet0/0/0/1
+  10.0.0.11/32 GigabitEthernet0/0/0/2
+ !
+!
+router bgp 65202
+ mpls activate
+  interface GigabitEthernet0/0/0/0
+  interface GigabitEthernet0/0/0/1
+  interface GigabitEthernet0/0/0/2
+ !
+ bgp unsafe-ebgp-policy
+ address-family ipv4 unicast
+  redistribute connected route-policy PL-LOCAL-LOOPBACK
+  allocate-label all
+ !
+ neighbor 10.0.0.2
+  remote-as 65302
+  update-source GigabitEthernet0/0/0/0
+  address-family ipv4 labeled-unicast
+   send-community-ebgp
+  !
+ !
+ neighbor 10.0.0.9
+  remote-as 65101
+  update-source GigabitEthernet0/0/0/1
+  address-family ipv4 labeled-unicast
+   send-community-ebgp
+  !
+ !
+ neighbor 10.0.0.11
+  remote-as 65102
+  update-source GigabitEthernet0/0/0/2
+  address-family ipv4 labeled-unicast
+   send-community-ebgp
+  !
+ !
+!
+mpls oam
+!
+mpls ldp
+!
+ssh server v2
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/0/0/0"/>
+        <interface id="1" name="GigabitEthernet0/0/0/1"/>
+        <interface id="2" name="GigabitEthernet0/0/0/2"/>
+        <interface id="3" name="GigabitEthernet0/0/0/3"/>
+    </node>
+    <node name="S2" type="SIMPLE" subtype="IOS XRv" location="975,562" vmImage="IOS XRv [0ae2f1ad-1a23-4884-9e68-fb02496091d9]">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">hostname 00-S2
+telnet vrf default ipv4 server max-servers 10
+line console
+ exec-timeout 0 0
+ session-timeout 0
+!
+line default
+ exec-timeout 0 0
+ session-timeout 0
+!
+vty-pool default 0 10 line-template default
+interface Loopback0
+ ipv4 address 172.16.1.2 255.255.255.255
+!
+interface MgmtEth0/0/CPU0/0
+ ipv4 address 10.255.0.32 255.255.0.0
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.11 255.255.255.254
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 10.0.0.7 255.255.255.254
+!
+interface GigabitEthernet0/0/0/2
+ ipv4 address 10.0.0.16 255.255.255.254
+!
+interface GigabitEthernet0/0/0/3
+ ipv4 address 10.0.0.18 255.255.255.254
+!
+community-set CM-RR
+  65000:1
+end-set
+!
+community-set CM-VM
+  65000:100
+end-set
+!
+community-set CM-SERVER
+  65000:3
+end-set
+!
+route-policy PL-EBGP-INET-OUT
+  if community matches-any CM-VM then
+    pass
+  else
+    drop
+  endif
+end-policy
+!
+route-policy PL-LOCAL-LOOPBACK
+  if destination in (172.16.1.2/32) then
+    pass
+    set community CM-RR
+  endif
+end-policy
+!
+router static
+ address-family ipv4 unicast
+  10.0.0.6/32 GigabitEthernet0/0/0/1
+  10.0.0.10/32 GigabitEthernet0/0/0/0
+ !
+!
+router bgp 65102
+ mpls activate
+  interface GigabitEthernet0/0/0/0
+  interface GigabitEthernet0/0/0/1
+ !
+ bgp unsafe-ebgp-policy
+ address-family ipv4 unicast
+  redistribute connected route-policy PL-LOCAL-LOOPBACK
+  allocate-label all
+ !
+ neighbor-group eBGP-INET
+  ebgp-multihop 255
+  update-source Loopback0
+  address-family ipv4 unicast
+   send-community-ebgp
+   route-policy PL-EBGP-INET-OUT out
+   next-hop-unchanged
+  !
+ !
+ neighbor 10.0.0.6
+  remote-as 65201
+  address-family ipv4 labeled-unicast
+   send-community-ebgp
+  !
+ !
+ neighbor 10.0.0.10
+  remote-as 65202
+  address-family ipv4 labeled-unicast
+   send-community-ebgp
+  !
+ !
+ neighbor 172.16.3.11
+  remote-as 65301
+  use neighbor-group eBGP-INET
+ !
+ neighbor 172.16.3.22
+  remote-as 65302
+  use neighbor-group eBGP-INET
+ !
+!
+mpls oam
+!
+ssh server v2
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/0/0/0"/>
+        <interface id="1" name="GigabitEthernet0/0/0/1"/>
+        <interface id="2" name="GigabitEthernet0/0/0/2"/>
+    </node>
+    <node name="SRV1" type="SIMPLE" subtype="vSRX" location="467,176" vmImage="vSRX-Junos-12.1 [928f73fe-2c19-4ef9-9810-7e071bc9ed04]" ipv4="192.168.0.2">
+        <extensions>
+            <entry key="AutoNetkit.mgmt_ip" type="string"></entry>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">system {
+    host-name 00-SRV1;
+    root-authentication {
+        encrypted-password "$1$Df5IfKHf$82GystyJxlDbZWt6eHoBk1"; ## SECRET-DATA
+    }
+    login {
+        user admin {
+            uid 2002;
+            class super-user;
+            authentication {
+                encrypted-password "$1$bCMVIlNv$5gVDQ8CG3IwlQLW4oB9Gm."; ## SECRET-DATA
+            }
+        }
+        user lab {
+            full-name "OPSENG Lab User";
+            uid 2004;
+            class super-user;
+            authentication {
+                encrypted-password "$1$vvwczEPX$yZ6asV0tIMJ.Go8PGoTKD1"; ## SECRET-DATA
+            }
+        }
+    }
+    services {
+        ftp;
+        ssh;
+        telnet;
+    }
+    syslog {
+        user * {
+            any emergency;
+        }
+        file messages {
+            any notice;
+            authorization info;
+        }
+        file interactive-commands {
+            interactive-commands any;
+        }
+    }
+}
+security {
+    forwarding-options {
+        family {
+            inet6 {
+                mode packet-based;
+            }
+            mpls {
+                mode packet-based;
+            }
+        }
+    }
+}
+interfaces {
+    ge-0/0/0 {
+        mac 00:50:56:8b:1a:2b;
+        unit 0 {
+            family inet {
+                address 10.255.0.21/16;
+            }
+        }
+    }
+    ge-0/0/1 {
+        mac 00:50:56:8b:c0:62;
+        unit 0 {
+            family inet {
+                address 10.1.0.0/31;
+            }
+        }
+    }
+    ge-0/0/2 {
+        mac 00:50:56:8b:12:02;
+        unit 0 {
+            family inet {
+                address 10.0.0.0/31;
+            }
+            family mpls;
+        }
+    }
+    ge-0/0/3 {
+        mac 00:50:56:8b:d2:e9;
+    }
+    ge-0/0/4 {
+        mac 00:50:56:8b:21:67;
+    }
+    lo0 {
+        unit 0 {
+            family inet {
+                address 172.16.3.11/32 {
+                    primary;
+                }
+            }
+        }
+    }
+}
+routing-options {
+    interface-routes {
+        rib-group inet RG-LOCAL-INTERFACES;
+    }
+    static {
+        route 0.0.0.0/0 discard;
+    }
+    rib-groups {
+        RG-LOCAL-INTERFACES {
+            import-rib [ inet.0 inet.3 ];
+            import-policy PL-LOCAL-LOOPBACK;
+        }
+        RG-RR-INET {
+            import-rib [ inet.3 inet.0 ];
+            import-policy PL-RR-INET;
+        }
+    }
+    router-id 172.16.3.11;
+    autonomous-system 65301;
+    forwarding-table {
+        export PL-LB;
+    }
+}
+protocols {
+    mpls {
+        icmp-tunneling;
+    }
+    bgp {
+        group eBGP-LU-65201 {
+            family inet {
+                labeled-unicast {
+                    rib-group RG-RR-INET;
+                    rib {
+                        inet.3;
+                    }
+                }
+            }
+            export PL-LOCAL-LOOPBACK;
+            peer-as 65201;
+            neighbor 10.0.0.1;
+        }
+        group eBGP-INET {
+            multihop;
+            local-address 172.16.3.11;
+            export PL-EBGP-INET-OUT;
+            neighbor 172.16.1.1 {
+                peer-as 65101;
+            }
+            neighbor 172.16.1.2 {
+                peer-as 65102;
+            }
+        }
+    }
+}
+policy-options {
+    policy-statement PL-EBGP-INET-OUT {
+        term VM-INTERFACE {
+            from interface ge-0/0/1.0;
+            then {
+                community add VM;
+                accept;
+            }
+        }
+        then reject;
+    }
+    policy-statement PL-LB {
+        then {
+            load-balance per-packet;
+        }
+    }
+    policy-statement PL-LOCAL-LOOPBACK {
+        term LOCAL-LOOPBACK {
+            from interface lo0.0;
+            then {
+                community add SERVER;
+                accept;
+            }
+        }
+    }
+    policy-statement PL-RR-INET {
+        term RR {
+            from community RR;
+            then accept;
+        }
+        then reject;
+    }
+    community RR members 65000:1;
+    community SERVER members 65000:3;
+    community VM members 65000:100;
+}</entry>
+        </extensions>
+        <interface id="0" name="ge-0/0/1"/>
+        <interface id="1" name="ge-0/0/2"/>
+        <interface id="2" name="ge-0/0/3"/>
+        <interface id="3" name="ge-0/0/4"/>
+    </node>
+    <node name="SRV2" type="SIMPLE" subtype="IOS XRv" location="467,562">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">hostname 00-SRV2
+telnet vrf default ipv4 server max-servers 10
+line console
+ exec-timeout 0 0
+ session-timeout 0
+!
+line default
+ exec-timeout 0 0
+ session-timeout 0
+!
+interface Loopback0
+ ipv4 address 172.16.3.22 255.255.255.255
+!
+interface MgmtEth0/0/CPU0/0
+ ipv4 address 10.255.0.22 255.255.0.0
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.2.0.0 255.255.255.254
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 10.0.0.2 255.255.255.254
+!
+community-set CM-RR
+  65000:1
+end-set
+!
+community-set CM-VM
+  65000:100
+end-set
+!
+community-set CM-SERVER
+  65000:3
+end-set
+!
+route-policy PL-EBGP-INET-OUT
+  if community matches-any CM-VM then
+    pass
+  else
+    drop
+  endif
+end-policy
+!
+route-policy PL-LOCAL-LOOPBACK
+  if community matches-any CM-SERVER then
+    pass
+  else
+    drop
+  endif
+end-policy
+!
+route-policy PL-LOCAL-INTERFACES
+  if destination in (172.16.3.22/32) then
+    set community CM-SERVER
+    pass
+  endif
+  if destination in (10.2.0.0/31) then
+    set community CM-VM
+    pass
+  endif
+end-policy
+!
+router static
+ address-family ipv4 unicast
+  0.0.0.0/0 Null0
+  10.0.0.3/32 GigabitEthernet0/0/0/1
+ !
+!
+router bgp 65302
+ mpls activate
+  interface GigabitEthernet0/0/0/1
+ !
+ bgp unsafe-ebgp-policy
+ address-family ipv4 unicast
+  redistribute connected route-policy PL-LOCAL-INTERFACES
+  allocate-label all
+ !
+ neighbor-group eBGP-INET
+  ebgp-multihop 255
+  update-source Loopback0
+  address-family ipv4 unicast
+   send-community-ebgp
+   route-policy PL-EBGP-INET-OUT out
+  !
+ !
+ neighbor 10.0.0.3
+  remote-as 65202
+  address-family ipv4 labeled-unicast
+   send-community-ebgp
+   route-policy PL-LOCAL-LOOPBACK out
+  !
+ !
+ neighbor 172.16.1.1
+  remote-as 65101
+  use neighbor-group eBGP-INET
+ !
+ neighbor 172.16.1.2
+  remote-as 65102
+  use neighbor-group eBGP-INET
+ !
+!
+mpls oam
+!
+ssh server v2
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/0/0/0"/>
+        <interface id="1" name="GigabitEthernet0/0/0/1"/>
+    </node>
+    <node name="H" type="SIMPLE" subtype="IOS XRv" location="292,359">
+        <extensions>
+            <entry key="Auto-generate config" type="Boolean">false</entry>
+            <entry key="config" type="String">!
+hostname H
+telnet vrf default ipv4 server max-servers 10
+vrf H1
+ address-family ipv4 unicast
+ !
+!
+vrf H2
+ address-family ipv4 unicast
+ !
+!
+line console
+ exec-timeout 0 0
+ session-timeout 0
+!
+line default
+ exec-timeout 0 0
+ session-timeout 0
+!
+vty-pool default 0 10 line-template default
+ftp client username juniper
+interface MgmtEth0/0/CPU0/0
+ ipv4 address 10.255.0.50 255.255.0.0
+!
+interface GigabitEthernet0/0/0/0
+ vrf H1
+ ipv4 address 10.1.0.1 255.255.255.254
+!
+interface GigabitEthernet0/0/0/1
+ vrf H2
+ ipv4 address 10.2.0.1 255.255.255.254
+!
+router static
+ vrf H1
+  address-family ipv4 unicast
+   0.0.0.0/0 10.1.0.0
+  !
+ !
+ vrf H2
+  address-family ipv4 unicast
+   0.0.0.0/0 10.2.0.0
+  !
+ !
+!
+ssh server v2
+end</entry>
+        </extensions>
+        <interface id="0" name="GigabitEthernet0/0/0/0"/>
+        <interface id="1" name="GigabitEthernet0/0/0/1"/>
+    </node>
+    <annotations/>
+    <connection dst="/virl:topology/virl:node[2]/virl:interface[1]" src="/virl:topology/virl:node[1]/virl:interface[3]"/>
+    <connection dst="/virl:topology/virl:node[1]/virl:interface[1]" src="/virl:topology/virl:node[5]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[3]/virl:interface[2]" src="/virl:topology/virl:node[2]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[4]/virl:interface[2]" src="/virl:topology/virl:node[1]/virl:interface[2]"/>
+    <connection dst="/virl:topology/virl:node[3]/virl:interface[3]" src="/virl:topology/virl:node[4]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[6]/virl:interface[2]" src="/virl:topology/virl:node[3]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[5]/virl:interface[1]" src="/virl:topology/virl:node[7]/virl:interface[1]"/>
+    <connection dst="/virl:topology/virl:node[6]/virl:interface[1]" src="/virl:topology/virl:node[7]/virl:interface[2]"/>
+</topology>
